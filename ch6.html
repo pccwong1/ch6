@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>財務狀況表大挑戰</title>
+<style>
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        background-color: #f0f8ff;
+        color: #333;
+        line-height: 1.6;
+        padding: 20px;
+        max-width: 900px;
+        margin: auto;
+    }
+    h1, h2 {
+        color: #005a9c;
+        border-bottom: 2px solid #005a9c;
+        padding-bottom: 10px;
+        text-align: center;
+    }
+    .game-container {
+        background-color: #fff;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+    .level { display: none; }
+    .level.active { display: block; }
+    .nav-buttons {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    .nav-button {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        padding: 12px 25px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+        margin: 0 10px;
+        transition: background-color 0.3s;
+    }
+    .nav-button:hover, .submit-btn:hover {
+        background-color: #0056b3;
+    }
+    .draggable-items, .drop-zones {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 15px;
+        margin-top: 20px;
+    }
+    .draggable {
+        background-color: #e9ecef;
+        padding: 10px 15px;
+        border: 1px solid #ced4da;
+        border-radius: 5px;
+        cursor: grab;
+        text-align: center;
+        /* 讓觸控操作更順暢 */
+        touch-action: none;
+    }
+    .drop-zone {
+        border: 2px dashed #007bff;
+        background-color: #f8f9fa;
+        padding: 20px;
+        min-width: 150px;
+        min-height: 100px;
+        border-radius: 5px;
+        text-align: center;
+    }
+    .drop-zone h3 { margin-top: 0; }
+    .question { margin-bottom: 15px; }
+    .question input {
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        margin-left: 10px;
+        font-size: 16px;
+    }
+    .submit-btn {
+        display: block;
+        margin: 20px auto 0;
+        background-color: #28a745;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        font-size: 16px;
+        cursor: pointer;
+    }
+    .feedback {
+        margin-top: 15px;
+        font-weight: bold;
+        text-align: center;
+    }
+    .correct { color: #28a745; }
+    .incorrect { color: #dc3545; }
+    #level3-statement {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-top: 20px;
+    }
+    .statement-section {
+        border: 1px solid #dee2e6;
+        padding: 15px;
+        border-radius: 5px;
+    }
+    .statement-section h4 { margin-top: 0; }
+    .statement-item {
+        display: flex;
+        justify-content: space-between;
+    }
+    .statement-item input { width: 80px; text-align: right; }
+</style>
+</head>
+<body>
+
+    <h1>財務狀況表大挑戰</h1>
+    <p style="text-align:center;">歡迎來到會計世界！通過三個挑戰，掌握編製財務狀況表的技巧。</p>
+
+    <div class="nav-buttons">
+        <button class="nav-button" onclick="showLevel(1)">第一關：分類大師</button>
+        <button class="nav-button" onclick="showLevel(2)">第二關：方程式挑戰</button>
+        <button class="nav-button" onclick="showLevel(3)">第三關：編製財務狀況表</button>
+    </div>
+
+    <div id="level1" class="level active game-container">
+        <h2>第一關：分類大師</h2>
+        <p>請將以下項目拖放到正確的分類中。</p>
+        <div class="draggable-items" id="items">
+            <div class="draggable" draggable="true" id="item1">廠房和物業</div>
+            <div class="draggable" draggable="true" id="item2">應收貨款</div>
+            <div class="draggable" draggable="true" id="item3">銀行透支</div>
+            <div class="draggable" draggable="true" id="item4">資本</div>
+            <div class="draggable" draggable="true" id="item5">應付貨款</div>
+            <div class="draggable" draggable="true" id="item6">銷貨運費</div>
+            <div class="draggable" draggable="true" id="item7">銀行貸款 (五年後償還)</div>
+        </div>
+        <div class="drop-zones">
+            <div class="drop-zone" data-zone="NCA"><h3>非流動資產</h3></div>
+            <div class="drop-zone" data-zone="CA"><h3>流動資產</h3></div>
+            <div class="drop-zone" data-zone="CAP"><h3>資本</h3></div>
+            <div class="drop-zone" data-zone="NCL"><h3>非流動負債</h3></div>
+            <div class="drop-zone" data-zone="CL"><h3>流動負債</h3></div>
+            <div class="drop-zone" data-zone="NotOnStatement"><h3>不屬於財務狀況表</h3></div>
+        </div>
+        <button class="submit-btn" onclick="checkLevel1()">提交答案</button>
+        <div id="feedback1" class="feedback"></div>
+    </div>
+
+    <div id="level2" class="level game-container">
+        <h2>第二關：方程式挑戰</h2>
+        <p>根據提供的資料，填寫空格中的答案。</p>
+        <div class="question">
+            <h4>1. 計算銷貨成本</h4>
+            <p>期初存貨: $8,700, 購貨: $36,000, 購貨運費: $1,500, 購貨退出: $1,900, 期末存貨: $12,300</p>
+            <label>銷貨成本 = <input type="number" id="cogs" placeholder="輸入答案"></label>
+        </div>
+        <div class="question">
+            <h4>2. 計算期末資本</h4>
+            <p>期初資本: $78,000, 本年度淨利: $69,300, 提用: $4,000</p>
+            <label>期末資本 = <input type="number" id="ending_capital" placeholder="輸入答案"></label>
+        </div>
+        <button class="submit-btn" onclick="checkLevel2()">提交答案</button>
+        <div id="feedback2" class="feedback"></div>
+    </div>
+
+    <div id="level3" class="level game-container">
+        <h2>第三關：編製財務狀況表</h2>
+        <p>陳先生企業於2022年3月31日的帳戶餘額如下。請編製財務狀況表。</p>
+        <p><b>提示：</b>你需要從損益表項目中計算出本年度淨利為 $69,300。</p>
+        <p><b>已知項目:</b> 機器: $48,800, 辦公室設備: $43,900, 期末存貨: $12,300, 應收貨款: $16,700, 銀行存款: $42,000, 應付貨款: $20,400, 期初資本: $78,000, 提用: $4,000, 本年度淨利: $69,300</p>
+        
+        <div id="level3-statement">
+            <div class="statement-section">
+                <h4>資產</h4>
+                <b>非流動資產</b>
+                <div class="statement-item"><span>機器</span><input type="number" id="s_machine" placeholder="金額"></div>
+                <div class="statement-item"><span>辦公室設備</span><input type="number" id="s_office_equip" placeholder="金額"></div>
+                <b>流動資產</b>
+                <div class="statement-item"><span>存貨</span><input type="number" id="s_inventory" placeholder="金額"></div>
+                <div class="statement-item"><span>應收貨款</span><input type="number" id="s_ar" placeholder="金額"></div>
+                <div class="statement-item"><span>銀行存款</span><input type="number" id="s_bank" placeholder="金額"></div>
+                <hr>
+                <div class="statement-item"><b>資產總額</b><input type="number" id="s_total_assets" placeholder="總額"></div>
+            </div>
+            <div class="statement-section">
+                <h4>資本及負債</h4>
+                <b>資本</b>
+                <div class="statement-item"><span>期初資本</span><span>$78,000</span></div>
+                <div class="statement-item"><span>加：本年度淨利</span><span>$69,300</span></div>
+                <div class="statement-item"><span>減：提用</span><span>($4,000)</span></div>
+                <div class="statement-item"><b>期末資本</b><input type="number" id="s_ending_cap" placeholder="總額"></div>
+                <br>
+                <b>流動負債</b>
+                <div class="statement-item"><span>應付貨款</span><input type="number" id="s_ap" placeholder="金額"></div>
+                <hr>
+                <div class="statement-item"><b>資本及負債總額</b><input type="number" id="s_total_cap_lia" placeholder="總額"></div>
+            </div>
+        </div>
+        
+        <button class="submit-btn" onclick="checkLevel3()">核對報表</button>
+        <div id="feedback3" class="feedback"></div>
+    </div>
+
+<!-- ===================================== -->
+<!--  ↓↓↓ 新增的觸控支援腳本 ↓↓↓  -->
+<!-- ===================================== -->
+<script src="https://bernardo-castilho.github.io/DragDropTouch/DragDropTouch.js"></script>
+
+<script>
+    // --- Basic Level Navigation ---
+    function showLevel(levelNum) {
+        document.querySelectorAll('.level').forEach(level => {
+            level.classList.remove('active');
+        });
+        document.getElementById('level' + levelNum).classList.add('active');
+    }
+
+    // --- Level 1: Drag and Drop ---
+    // 這部分的程式碼完全不需要修改，因為上面的新腳本會自動處理觸控事件
+    const draggables = document.querySelectorAll('.draggable');
+    const dropZones = document.querySelectorAll('.drop-zone');
+
+    draggables.forEach(draggable => {
+        draggable.addEventListener('dragstart', () => {
+            draggable.classList.add('dragging');
+        });
+        draggable.addEventListener('dragend', () => {
+            draggable.classList.remove('dragging');
+        });
+    });
+
+    dropZones.forEach(zone => {
+        zone.addEventListener('dragover', e => {
+            e.preventDefault();
+            const draggable = document.querySelector('.dragging');
+            zone.appendChild(draggable);
+        });
+    });
+
+    const level1Answers = {
+        item1: "NCA", item2: "CA", item3: "CL", item4: "CAP",
+        item5: "CL", item6: "NotOnStatement", item7: "NCL"
+    };
+
+    function checkLevel1() {
+        let correctCount = 0;
+        let totalCount = Object.keys(level1Answers).length;
+        let feedbackHtml = '';
+        for (const itemId in level1Answers) {
+            const item = document.getElementById(itemId);
+            const parentZone = item.parentElement.getAttribute('data-zone');
+            const correctZone = level1Answers[itemId];
+            if (parentZone === correctZone) {
+                correctCount++;
+                item.style.borderColor = '#28a745';
+                item.style.backgroundColor = '#d4edda';
+            } else {
+                item.style.borderColor = '#dc3545';
+                item.style.backgroundColor = '#f8d7da';
+                const correctZoneName = document.querySelector(`.drop-zone[data-zone="${correctZone}"] h3`).textContent;
+                feedbackHtml += `<p class="incorrect">'${item.textContent}' 的分類是錯誤的，它應該屬於 ${correctZoneName}。</p>`;
+            }
+        }
+        if (correctCount === totalCount) {
+            document.getElementById('feedback1').innerHTML = `<p class="correct">恭喜！全部分類正確！</p>`;
+        } else {
+            document.getElementById('feedback1').innerHTML = `<p>你答對了 ${correctCount} / ${totalCount} 題。</p>${feedbackHtml}`;
+        }
+    }
+
+    // --- Level 2: Equations ---
+    function checkLevel2() {
+        let allCorrect = true;
+        const cogsAnswer = 32000;
+        const cogsInput = document.getElementById('cogs');
+        if (parseInt(cogsInput.value) === cogsAnswer) {
+            cogsInput.style.backgroundColor = '#d4edda';
+        } else {
+            cogsInput.style.backgroundColor = '#f8d7da';
+            allCorrect = false;
+        }
+        const capAnswer = 143300;
+        const capInput = document.getElementById('ending_capital');
+        if (parseInt(capInput.value) === capAnswer) {
+            capInput.style.backgroundColor = '#d4edda';
+        } else {
+            capInput.style.backgroundColor = '#f8d7da';
+            allCorrect = false;
+        }
+        const feedbackEl = document.getElementById('feedback2');
+        if (allCorrect) {
+            feedbackEl.innerHTML = '<p class="correct">太棒了！所有計算都正確！</p>';
+        } else {
+            feedbackEl.innerHTML = '<p class="incorrect">部分答案不正確，請再試一次。正確的項目已用綠色標示。</p>';
+        }
+    }
+    
+    // --- Level 3: Build the Statement ---
+    const level3Answers = {
+        s_machine: 48800, s_office_equip: 43900, s_inventory: 12300,
+        s_ar: 16700, s_bank: 42000, s_ap: 20400, s_ending_cap: 143300,
+        s_total_assets: 163700, s_total_cap_lia: 163700
+    };
+
+    function checkLevel3() {
+        let correctFields = 0;
+        for (const id in level3Answers) {
+            const input = document.getElementById(id);
+            if (parseInt(input.value) === level3Answers[id]) {
+                input.style.backgroundColor = '#d4edda';
+                correctFields++;
+            } else {
+                input.style.backgroundColor = '#f8d7da';
+            }
+        }
+        const totalAssets = parseInt(document.getElementById('s_total_assets').value) || 0;
+        const totalCapLia = parseInt(document.getElementById('s_total_cap_lia').value) || 0;
+        const feedbackEl = document.getElementById('feedback3');
+        if (correctFields === Object.keys(level3Answers).length && totalAssets === totalCapLia) {
+            feedbackEl.innerHTML = `<p class="correct">完美！財務狀況表已成功平衡！資產總額 ($${totalAssets}) = 資本及負債總額 ($${totalCapLia})。</p>`;
+        } else if (totalAssets !== totalCapLia) {
+            feedbackEl.innerHTML = `<p class="incorrect">報表未能平衡！資產總額 ($${totalAssets}) 不等於 資本及負債總額 ($${totalCapLia})。請檢查你的數字。</p>`;
+        } else {
+            feedbackEl.innerHTML = `<p class="incorrect">部分數字不正確，請再檢查一次。報表雖然平衡了，但部分細項有誤。</p>`;
+        }
+    }
+</script>
+
+</body>
+</html>
