@@ -20,6 +20,18 @@
         padding-bottom: 10px;
         text-align: center;
     }
+    #total-score-display {
+        text-align: center;
+        font-size: 24px;
+        font-weight: bold;
+        color: #dc3545;
+        margin-bottom: 15px;
+        background-color: #fff;
+        padding: 10px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        border: 1px solid #dee2e6;
+    }
     .game-container {
         background-color: #fff;
         padding: 25px;
@@ -61,7 +73,6 @@
         border-radius: 5px;
         cursor: grab;
         text-align: center;
-        /* 讓觸控操作更順暢 */
         touch-action: none;
     }
     .drop-zone {
@@ -122,6 +133,7 @@
 <body>
 
     <h1>財務狀況表大挑戰</h1>
+    <div id="total-score-display">總分: 0</div>
     <p style="text-align:center;">歡迎來到會計世界！通過三個挑戰，掌握編製財務狀況表的技巧。</p>
 
     <div class="nav-buttons">
@@ -131,7 +143,7 @@
     </div>
 
     <div id="level1" class="level active game-container">
-        <h2>第一關：分類大師</h2>
+        <h2>第一關：分類大師 (每項10分)</h2>
         <p>請將以下項目拖放到正確的分類中。</p>
         <div class="draggable-items" id="items">
             <div class="draggable" draggable="true" id="item1">廠房和物業</div>
@@ -155,7 +167,7 @@
     </div>
 
     <div id="level2" class="level game-container">
-        <h2>第二關：方程式挑戰</h2>
+        <h2>第二關：方程式挑戰 (每題20分)</h2>
         <p>根據提供的資料，填寫空格中的答案。</p>
         <div class="question">
             <h4>1. 計算銷貨成本</h4>
@@ -172,7 +184,7 @@
     </div>
 
     <div id="level3" class="level game-container">
-        <h2>第三關：編製財務狀況表</h2>
+        <h2>第三關：編製財務狀況表 (每格10分, 平衡獎勵20分)</h2>
         <p>陳先生企業於2022年3月31日的帳戶餘額如下。請編製財務狀況表。</p>
         <p><b>提示：</b>你需要從損益表項目中計算出本年度淨利為 $69,300。</p>
         <p><b>已知項目:</b> 機器: $48,800, 辦公室設備: $43,900, 期末存貨: $12,300, 應收貨款: $16,700, 銀行存款: $42,000, 應付貨款: $20,400, 期初資本: $78,000, 提用: $4,000, 本年度淨利: $69,300</p>
@@ -209,13 +221,20 @@
         <div id="feedback3" class="feedback"></div>
     </div>
 
-<!-- ===================================== -->
-<!--  ↓↓↓ 新增的觸控支援腳本 ↓↓↓  -->
-<!-- ===================================== -->
 <script src="https://bernardo-castilho.github.io/DragDropTouch/DragDropTouch.js"></script>
 
 <script>
-    // --- Basic Level Navigation ---
+    // --- 全域計分變數 ---
+    let level1Score = 0;
+    let level2Score = 0;
+    let level3Score = 0;
+
+    function updateTotalScore() {
+        const totalScore = level1Score + level2Score + level3Score;
+        document.getElementById('total-score-display').textContent = `總分: ${totalScore}`;
+    }
+
+    // --- 關卡導航 ---
     function showLevel(levelNum) {
         document.querySelectorAll('.level').forEach(level => {
             level.classList.remove('active');
@@ -223,20 +242,13 @@
         document.getElementById('level' + levelNum).classList.add('active');
     }
 
-    // --- Level 1: Drag and Drop ---
-    // 這部分的程式碼完全不需要修改，因為上面的新腳本會自動處理觸控事件
+    // --- 第一關: 拖放 ---
     const draggables = document.querySelectorAll('.draggable');
     const dropZones = document.querySelectorAll('.drop-zone');
-
     draggables.forEach(draggable => {
-        draggable.addEventListener('dragstart', () => {
-            draggable.classList.add('dragging');
-        });
-        draggable.addEventListener('dragend', () => {
-            draggable.classList.remove('dragging');
-        });
+        draggable.addEventListener('dragstart', () => draggable.classList.add('dragging'));
+        draggable.addEventListener('dragend', () => draggable.classList.remove('dragging'));
     });
-
     dropZones.forEach(zone => {
         zone.addEventListener('dragover', e => {
             e.preventDefault();
@@ -251,15 +263,19 @@
     };
 
     function checkLevel1() {
+        level1Score = 0; // 每次檢查都重置分數
         let correctCount = 0;
-        let totalCount = Object.keys(level1Answers).length;
+        const totalCount = Object.keys(level1Answers).length;
+        const pointsPerItem = 10;
         let feedbackHtml = '';
+
         for (const itemId in level1Answers) {
             const item = document.getElementById(itemId);
             const parentZone = item.parentElement.getAttribute('data-zone');
             const correctZone = level1Answers[itemId];
             if (parentZone === correctZone) {
                 correctCount++;
+                level1Score += pointsPerItem; // 加分
                 item.style.borderColor = '#28a745';
                 item.style.backgroundColor = '#d4edda';
             } else {
@@ -269,41 +285,47 @@
                 feedbackHtml += `<p class="incorrect">'${item.textContent}' 的分類是錯誤的，它應該屬於 ${correctZoneName}。</p>`;
             }
         }
+        
         if (correctCount === totalCount) {
-            document.getElementById('feedback1').innerHTML = `<p class="correct">恭喜！全部分類正確！</p>`;
+             document.getElementById('feedback1').innerHTML = `<p class="correct">恭喜！全部分類正確！<br>你在此關卡獲得 ${level1Score} 分！</p>`;
         } else {
-            document.getElementById('feedback1').innerHTML = `<p>你答對了 ${correctCount} / ${totalCount} 題。</p>${feedbackHtml}`;
+            document.getElementById('feedback1').innerHTML = `<p>你答對了 ${correctCount} / ${totalCount} 題，獲得 ${level1Score} 分。</p>${feedbackHtml}`;
         }
+        updateTotalScore(); // 更新總分
     }
 
-    // --- Level 2: Equations ---
+    // --- 第二關: 方程式 ---
     function checkLevel2() {
-        let allCorrect = true;
+        level2Score = 0; // 重置分數
+        const pointsPerQuestion = 20;
         const cogsAnswer = 32000;
         const cogsInput = document.getElementById('cogs');
         if (parseInt(cogsInput.value) === cogsAnswer) {
             cogsInput.style.backgroundColor = '#d4edda';
+            level2Score += pointsPerQuestion; // 加分
         } else {
             cogsInput.style.backgroundColor = '#f8d7da';
-            allCorrect = false;
         }
+
         const capAnswer = 143300;
         const capInput = document.getElementById('ending_capital');
         if (parseInt(capInput.value) === capAnswer) {
             capInput.style.backgroundColor = '#d4edda';
+            level2Score += pointsPerQuestion; // 加分
         } else {
             capInput.style.backgroundColor = '#f8d7da';
-            allCorrect = false;
         }
+        
         const feedbackEl = document.getElementById('feedback2');
-        if (allCorrect) {
-            feedbackEl.innerHTML = '<p class="correct">太棒了！所有計算都正確！</p>';
+        if (level2Score === pointsPerQuestion * 2) {
+            feedbackEl.innerHTML = `<p class="correct">太棒了！所有計算都正確！<br>你在此關卡獲得 ${level2Score} 分！</p>`;
         } else {
-            feedbackEl.innerHTML = '<p class="incorrect">部分答案不正確，請再試一次。正確的項目已用綠色標示。</p>';
+            feedbackEl.innerHTML = `<p class="incorrect">部分答案不正確，請再試一次。<br>你在此關卡暫時獲得 ${level2Score} 分。</p>`;
         }
+        updateTotalScore(); // 更新總分
     }
     
-    // --- Level 3: Build the Statement ---
+    // --- 第三關: 編製報表 ---
     const level3Answers = {
         s_machine: 48800, s_office_equip: 43900, s_inventory: 12300,
         s_ar: 16700, s_bank: 42000, s_ap: 20400, s_ending_cap: 143300,
@@ -311,30 +333,45 @@
     };
 
     function checkLevel3() {
-        let correctFields = 0;
+        level3Score = 0; // 重置分數
+        const pointsPerField = 10;
+        const balanceBonus = 20;
+        let correctFieldsCount = 0;
+        
         for (const id in level3Answers) {
             const input = document.getElementById(id);
             if (parseInt(input.value) === level3Answers[id]) {
                 input.style.backgroundColor = '#d4edda';
-                correctFields++;
+                level3Score += pointsPerField; // 每個正確的格子都加分
+                correctFieldsCount++;
             } else {
                 input.style.backgroundColor = '#f8d7da';
             }
         }
+        
         const totalAssets = parseInt(document.getElementById('s_total_assets').value) || 0;
         const totalCapLia = parseInt(document.getElementById('s_total_cap_lia').value) || 0;
+        const allFieldsCorrect = correctFieldsCount === Object.keys(level3Answers).length;
+        
         const feedbackEl = document.getElementById('feedback3');
-        if (correctFields === Object.keys(level3Answers).length && totalAssets === totalCapLia) {
-            feedbackEl.innerHTML = `<p class="correct">完美！財務狀況表已成功平衡！資產總額 ($${totalAssets}) = 資本及負債總額 ($${totalCapLia})。</p>`;
+
+        if (allFieldsCorrect && totalAssets === totalCapLia) {
+            const finalScore = level3Score + balanceBonus;
+            feedbackEl.innerHTML = `<p class="correct">完美！財務狀況表已成功平衡！<br>你在此關卡獲得 ${finalScore} 分 (包含 ${balanceBonus} 分獎勵分)！</p>`;
+            level3Score = finalScore; // 將獎勵分計入關卡總分
         } else if (totalAssets !== totalCapLia) {
-            feedbackEl.innerHTML = `<p class="incorrect">報表未能平衡！資產總額 ($${totalAssets}) 不等於 資本及負債總額 ($${totalCapLia})。請檢查你的數字。</p>`;
+            feedbackEl.innerHTML = `<p class="incorrect">報表未能平衡！請檢查你的數字。<br>你在此關卡暫時獲得 ${level3Score} 分。</p>`;
         } else {
-            feedbackEl.innerHTML = `<p class="incorrect">部分數字不正確，請再檢查一次。報表雖然平衡了，但部分細項有誤。</p>`;
+            feedbackEl.innerHTML = `<p class="incorrect">部分數字不正確。報表雖然平衡了，但部分細項有誤。<br>你在此關卡暫時獲得 ${level3Score} 分。</p>`;
         }
+        
+        updateTotalScore(); // 更新總分
     }
 </script>
 
 </body>
 </html>
+
+
 
 
